@@ -4,16 +4,16 @@ library(stats)
 library(ggplot2)
 library(gridExtra)
 library(latex2exp)
+library(SteinIV)
+library(ivmodel)
 
-source("~/Leonard/Papers/Rcode/EfficientVAS/BigCode/GesSimulation/PlotFunctions/PlotPrep/meanFunctions.R")
 
-
-setwd("~/Leonard/Papers/Research/DraftPapers/Leo/efficiency-IV/Rcode/SimulationStudy")
-source("functions.R")
+setwd("~/GitHub/efficientCIS")
+source("HelperFunctions/functions.R")
 
 reps <- 100
-k <- 1000
-ss <- c(20,500)
+k <- 100
+ss <- c(50,500)
 n <- c()
 for(i in 1:length(ss)) n <- c(n,rep(ss[i],k))
 
@@ -68,10 +68,10 @@ Z[[18]] <- c(1,4,5) # "({A,B,D},C)" optimal CIS
 Z[[19]] <- c() # plain OLS
 Z[[20]] <- c(5) # filler to prevent bugs
 
-C[[1]] <- c(2) 
-C[[2]] <- c(1,2) 
-C[[3]] <- c(2,5) 
-C[[4]] <- c(1,2,5) 
+C[[1]] <- c(2)
+C[[2]] <- c(1,2)
+C[[3]] <- c(2,5)
+C[[4]] <- c(1,2,5)
 C[[5]] <- c(4)
 C[[6]] <- c(2)
 C[[7]] <- c(2,4)
@@ -83,88 +83,129 @@ C[[12]] <- c(1,2)
 C[[13]] <- c(2)
 C[[14]] <- c(2,5)
 C[[15]] <- c(4)
-C[[16]] <- c(2) 
-C[[17]] <- c(2,4) 
+C[[16]] <- c(2)
+C[[17]] <- c(2,4)
 C[[18]] <- c(2)# optimal CIS
 C[[19]] <- c() # plain OLS
 C[[20]] <- c(2) # filler to prevent bugs
 
-set.seed(60)
-Parameters_2 <- generate_parameters(B,k) # generate Parameters
+set.seed(5)
+Parameters <- generate_parameters(B,k) # generate Parameters
 errors <- sample(c("Gaussian","uniform"),k,replace=TRUE)
 
 k2 <- length(Z)
 
-MSE_2 <- matrix(numeric(length(ss)*k*k2),nrow=length(ss)*k)
-Avar_2 <- matrix(numeric(length(ss)*k*k2),nrow=length(ss)*k)
-Var_2 <- matrix(numeric(length(ss)*k*k2),nrow=length(ss)*k)
-Bias_2 <- matrix(numeric(length(ss)*k*k2),nrow=length(ss)*k)
+MSE_tsls <- matrix(numeric(length(ss)*k*k2),nrow=length(ss)*k)
+Avar_tsls <- matrix(numeric(length(ss)*k*k2),nrow=length(ss)*k)
+Var_tsls <- matrix(numeric(length(ss)*k*k2),nrow=length(ss)*k)
+Bias_tsls <- matrix(numeric(length(ss)*k*k2),nrow=length(ss)*k)
+
+MSE_liml <- matrix(numeric(length(ss)*k*k2),nrow=length(ss)*k)
+Var_liml <- matrix(numeric(length(ss)*k*k2),nrow=length(ss)*k)
+Bias_liml <- matrix(numeric(length(ss)*k*k2),nrow=length(ss)*k)
+
+MSE_jive <- matrix(numeric(length(ss)*k*k2),nrow=length(ss)*k)
+Var_jive <- matrix(numeric(length(ss)*k*k2),nrow=length(ss)*k)
+Bias_jive <- matrix(numeric(length(ss)*k*k2),nrow=length(ss)*k)
 
 for(j in 1:length(ss)){
   for(i in 1:k){
-    Results_2 <- testGraph(n[(j-1)*k+i],reps,Parameters_2[[1]][,i],Parameters_2[[2]][,i],x,y,Z,C,B,errors[i])
-    MSE_2[(j-1)*k+i,] <- Results_2[1,]
-    Avar_2[(j-1)*k+i,] <- Results_2[2,]
-    Var_2[(j-1)*k+i,] <- Results_2[3,]
-    Bias_2[(j-1)*k+i,] <- Results_2[4,]
+    Results <- testGraph(n[(j-1)*k+i],reps,Parameters[[1]][,i],Parameters[[2]][,i],x,y,Z,C,B,errors[i])
+    MSE_tsls[(j-1)*k+i,] <- Results$tsls[1,]
+    Avar_tsls[(j-1)*k+i,] <- Results$tsls[2,]
+    Var_tsls[(j-1)*k+i,] <- Results$tsls[3,]
+    Bias_tsls[(j-1)*k+i,] <- Results$tsls[4,]
+
+    MSE_liml[(j-1)*k+i,] <- Results$liml[1,]
+    Var_liml[(j-1)*k+i,] <- Results$liml[2,]
+    Bias_liml[(j-1)*k+i,] <- Results$liml[3,]
+
+    MSE_jive[(j-1)*k+i,] <- Results$jive[1,]
+    Var_jive[(j-1)*k+i,] <- Results$jive[2,]
+    Bias_jive[(j-1)*k+i,] <- Results$jive[3,]
   }
 }
 
-aSE_2 <- sqrt(Avar_2)
-RMSE_2 <- sqrt(MSE_2)
+aSE_tsls_1 <- sqrt(Avar_tsls)
+RMSE_tsls_1 <- sqrt(MSE_tsls)
+RMSE_jive_1 <- sqrt(MSE_jive)
+RMSE_liml_1 <- sqrt(MSE_liml)
 
-comparison_2 <- matrix(c(18,1,
-                       18,2,
-                       18,3,
-                       18,4,
+comparison_1 <- matrix(c(
+                       18,1,
+                       # 18,2,
+                       # 18,3,
+                       # 18,4,
                        18,5,
                        18,6,
                        18,7,
                        18,10,
                        18,11,
                        # 15,14,
-                       18,19),nrow=2)
+                       18,78,
+                       18,58,
+                       18,19
+                       ),nrow=2)
 
-names_comparisons_2 <- c("{B,C}",
-                       "{B,{A,C}}",
-                       "{B,{C,D}}",
-                       "{B,{A,C,D}}",
-                       "{D,B}", 
-                       "{D,C}",
-                       "{D,{B,C}}",
-                       "{D,{A,B,C}}",
-                       "{{B,D},C}",
+names_comparisons_1 <- c(
+                       "(B,C)",
+                       # "(B,{A,C})",
+                       # "(B,{C,D})",
+                       # "(B,{A,C,D})",
+                       "(D,B)",
+                       "(D,C)",
+                       "(D,{B,C})",
+                       "(D,{A,B,C})",
+                       "({B,D},C)",
                        # "{{B,C},{A}}",
+                       "LIML",
+                       "JIVE",
                        "OLS")
 
-p_20_1a <- plot_MSE_comparison(RMSE_2[n==20,],comparison_2,names_comparisons_2,title=TeX("$G_{1a}, n=20$"))
-p_500_1a <- plot_MSE_comparison(RMSE_2[n==500,],comparison_2,names_comparisons_2,title=TeX("$G_{1a}, n=500$"))
-p_infty_1a <- plot_MSE_comparison(aSE_2[n==20,],comparison_2,names_comparisons_2,title=c(""),ytitle="Asy. SD ratio")
+RMSE_joint_1 <- cbind(RMSE_tsls_1,aSE_tsls_1,RMSE_jive_1,RMSE_liml_1)
+
+p_50_1a <- plot_MSE_comparison(RMSE_joint_1[n==50,],comparison_1,names_comparisons_1,title=TeX("$G_{1}, n=50$"),bw=0.1)
+p_500_1a <- plot_MSE_comparison(RMSE_joint_1[n==500,],comparison_1,names_comparisons_1,title=TeX("$G_{1}, n=500$"),bw=0.1)
+p_infty_1a <- plot_MSE_comparison(aSE_tsls_1[n==50,],comparison_1,names_comparisons_1,title=c(""),ytitle="Asy. SD ratio")
 
 pdf("plots/example2.pdf",width=9, height=7.5)
-grid.arrange(p_20_1a, p_500_1a, p_infty_1a, ncol=1)
+grid.arrange(p_50_1a, p_500_1a, p_infty_1a, ncol=1)
 dev.off()
 
-write.table(MSE_2, file = "Example2_MSE_1000.txt", sep = ",", quote = FALSE, row.names = F)
+write.table(RMSE_joint_1, file = "Example1_MSE_100.txt", sep = ",", quote = FALSE, row.names = F)
 
-pdf("plots/example1and2.pdf",width=9, height=7.5)
-grid.arrange(p_20_1a,p_500_1a,p_20_2a, p_500_2a, ncol=1)
+comparison_1_2 <- matrix(c(18,19,
+                         18,58,
+                         18,78),nrow=2)
+
+names_comparisons_1_2 <- c("OLS","JIVE","LIML")
+
+
+p_50_1a_2 <- plot_MSE_comparison(RMSE_joint_1[n==50,],comparison_1_2,names_comparisons_1_2,title=TeX("$G_{1}, n=50$"))
+p_500_1a_2 <- plot_MSE_comparison(RMSE_joint_1[n==500,],comparison_1_2,names_comparisons_1_2,title=TeX("$G_{1}, n=500$"),ytitle="",bw=0.1)
+
+pdf("example1and2.pdf",width=9, height=7.5)
+grid.arrange(p_50_1a, p_500_1a, p_50_2a, p_500_2a, ncol=1)
+dev.off()
+
+pdf("method_comp.pdf",width=9, height=3.75)
+grid.arrange(p_50_1a_2, p_500_1a_2, p_50_2a_2, p_500_2a_2, ncol=2, nrow=2)
 dev.off()
 
 # full names
 # c("({B},em)",
 #   "({B},{A})",
 #   "({B},{C})",
-#   "({B},{A,C})",  
+#   "({B},{A,C})",
 #   "({C},em)",  # 5
 #   "({C},{A})",
 #   "({C},{B})",
-#   "({C},{A,B})",  
+#   "({C},{A,B})",
 #   "({A,B},em)",
 #   "({A,B},{C})",  # 10
 #   "({A,C},em)",
 #   "({A,C},{B})",
-#   "({B,C},em)",  
+#   "({B,C},em)",
 #   "({B,C},{A})",
 #   "({A,B,C},em)",  # 15
-#   "em")    
+#   "em")
