@@ -192,20 +192,40 @@ pdf("method_comp.pdf",width=9, height=3.75)
 grid.arrange(p_50_1a_2, p_500_1a_2, p_50_2a_2, p_500_2a_2, ncol=2, nrow=2)
 dev.off()
 
-# full names
-# c("({B},em)",
-#   "({B},{A})",
-#   "({B},{C})",
-#   "({B},{A,C})",
-#   "({C},em)",  # 5
-#   "({C},{A})",
-#   "({C},{B})",
-#   "({C},{A,B})",
-#   "({A,B},em)",
-#   "({A,B},{C})",  # 10
-#   "({A,C},em)",
-#   "({A,C},{B})",
-#   "({B,C},em)",
-#   "({B,C},{A})",
-#   "({A,B,C},em)",  # 15
-#   "em")
+
+
+comparison_alt <- matrix(c(
+  18,1,
+  18,2,
+  18,3,
+  18,4,
+  18,5,
+  18,6,
+  18,7,
+  18,10,
+  18,11
+  # 15,14,
+),nrow=2)
+
+names_alt <- c(
+  "(B,C)",
+  "(B,{A,C})",
+  "(B,{C,D})",
+  "(B,{A,C,D})",
+  "(D,B)",
+  "(D,C)",
+  "(D,{B,C})",
+  "(D,{A,B,C})",
+  "({B,D},C)"
+  # "{{B,C},{A}}",
+  )
+
+p_50_1a_jive <- plot_MSE_comparison(RMSE_jive_1[n==50,],comparison_alt,names_alt,title=TeX("$G_{1}, n=50, JIVE$"),bw=0.1)
+p_500_1a_jive <- plot_MSE_comparison(RMSE_jive_1[n==500,],comparison_alt,names_alt,title=TeX("$G_{1}, n=500, JIVE$"),bw=0.1)
+p_50_1a_liml <- plot_MSE_comparison(RMSE_liml_1[n==50,],comparison_alt,names_alt,title=TeX("$G_{1}, n=50, LIML$"),bw=0.1)
+p_500_1a_liml <- plot_MSE_comparison(RMSE_liml_1[n==500,],comparison_alt,names_alt,title=TeX("$G_{1}, n=500, LIML$"),bw=0.1)
+
+pdf("limljive.pdf",width=9, height=18)
+grid.arrange(p_50_1a_liml, p_500_1a_liml,p_50_1a_jive, p_500_1a_jive,p_50_2a_liml, p_500_2a_liml,p_50_2a_jive, p_500_2a_jive, nrow=8)
+dev.off()
+
