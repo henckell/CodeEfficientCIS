@@ -10,6 +10,7 @@ library(ivmodel)
 
 setwd("~/GitHub/efficientCIS")
 source("HelperFunctions/functions.R")
+source("HelperFunctions/meanFunctions.R")
 
 reps <- 100
 k <- 100
@@ -184,7 +185,7 @@ names_comparisons_1_2 <- c("OLS","JIVE","LIML")
 p_50_1a_2 <- plot_MSE_comparison(RMSE_joint_1[n==50,],comparison_1_2,names_comparisons_1_2,title=TeX("$G_{1}, n=50$"))
 p_500_1a_2 <- plot_MSE_comparison(RMSE_joint_1[n==500,],comparison_1_2,names_comparisons_1_2,title=TeX("$G_{1}, n=500$"),ytitle="",bw=0.1)
 
-pdf("example1and2.pdf",width=9, height=7.5)
+pdf("example1and2.pdf",width=14, height=7.5)
 grid.arrange(p_50_1a, p_500_1a, p_50_2a, p_500_2a, ncol=1)
 dev.off()
 
@@ -225,7 +226,7 @@ p_500_1a_jive <- plot_MSE_comparison(RMSE_jive_1[n==500,],comparison_alt,names_a
 p_50_1a_liml <- plot_MSE_comparison(RMSE_liml_1[n==50,],comparison_alt,names_alt,title=TeX("$G_{1}, n=50, LIML$"),bw=0.1)
 p_500_1a_liml <- plot_MSE_comparison(RMSE_liml_1[n==500,],comparison_alt,names_alt,title=TeX("$G_{1}, n=500, LIML$"),bw=0.1)
 
-pdf("limljive.pdf",width=9, height=18)
+pdf("limljive.pdf",width=14, height=18)
 grid.arrange(p_50_1a_liml, p_500_1a_liml,p_50_1a_jive, p_500_1a_jive,p_50_2a_liml, p_500_2a_liml,p_50_2a_jive, p_500_2a_jive, nrow=8)
 dev.off()
 

@@ -7,6 +7,7 @@ library(latex2exp)
 
 source("meanFunctions.R")
 source("functions.R")
+source("HelperFunctions/meanFunctions.R")
 
 reps <- 100
 k <- 100
