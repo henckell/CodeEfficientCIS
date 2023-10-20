@@ -8,7 +8,7 @@ library(SteinIV)
 library(ivmodel)
 
 
-setwd("~/GitHub/efficientCIS")
+setwd("~/GitHub/CodeEfficientCIS")
 source("HelperFunctions/functions.R")
 source("HelperFunctions/meanFunctions.R")
 
